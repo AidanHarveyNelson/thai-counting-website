@@ -1,27 +1,92 @@
 console.log('Thai Game Code Running')
 
-function setup_game(number_count, max, min) {
-    // Add Text Here SOMETHING LIKE THE FOLLOWING
-    //print('''
-    //Welcome to the Thai Counting Game.
-    //You will see a Thai Number on the screen 
-    //Please enter the English Number that Matches the Thai number
-    //Then Press the enter key to check if the result is Correct
-    //''')
+class ThaiGame {
+    constructor() {
+        this.current_index = 0
+        this.correct_count = 0
+        this.number_list = []
+        this.thai_text = document.getElementById('thainumber');
+        this.submit_box = document.getElementById('submit');
+        this.input_box = document.getElementById('responsenumber');
+        this.response_message = document.getElementById("responsemessage")
 
-    var number_list = []
+        // Add Event Listeners
+        this.submit_box.addEventListener('click', this.checkResult.bind(this))
+        this.input_box.addEventListener('keypress', (event) => {
+            if (event.key == 'Enter') {
+                this.checkResult()
+            }
+        });
 
-    for (const _ of Array(number_count).keys()) {
-        result = generate_random_thai_number(max, min)
-        number_list.push(result)
+        this.setup_game()
     }
 
-    run_game(number_list)
+    checkResult() {
+        var english, thai
+
+        [english, thai] = this.number_list[this.current_index]
+        console.log(english)
+        console.log(thai)
+        this.thai_text.innerText = thai
+        console.log('Button Has Been Clicked')
+        console.log(this.input_box.value)
+        if (english == parseInt(this.input_box.value)) {
+            this.response_message.innerText = "That is Correct Well Done!"
+            this.correct_count += 1
+        }
+        else {
+            this.response_message.innerText = "That is incorrect the correct answer is " + english
+        }
+        this.current_index += 1
+        if (this.current_index == this.number_list.length) {
+            if (this.correct_count >= 7) {
+                this.thai_text.innerText = "Well done you got " + this.correct_count + " out of " + this.number_list.length
+            }
+            else {
+                this.thai_text.innerText = "Keep practising you got  " + this.correct_count + " out of " + this.number_list.length
+            } 
+        }
+        else {
+            this.response_message.innerText =this. response_message.innerText + "\n " + this.correct_count + "/" + this.number_list.length
+            this.update_text()
+            this.input_box.focus()
+        }
+    }
+
+    update_text() {
+        // Setup Text Boxes
+        var english, thai
+        [english, thai] = this.number_list[this.current_index]
+
+        this.input_box.value = ""
+        this.thai_text.innerText = thai
+    }
+
+    async generate_data() {
+        // Set Variables
+        var game_count = 10
+        var max_value = 100
+        var min_value = 0
+
+        var response = await fetch(`/thaigame/generate?games=${game_count}&max=${max_value}&min=${min_value}`)
+        if (response.status == 200) {
+            return await response.json()
+        }
+        else {
+            throw (`${response.status} Unable to Get Data`)
+        }
+    }
+    
+    async setup_game() {
+        console.log('SETTING UP GAME')
+        this.current_index = 0
+        this.correct_count = 0
+    
+        this.number_list = await this.generate_data()
+
+        this.update_text()
+    }
+    
 }
 
-function run_game(number_list) {
-    console.log('RUNNING GAME')
-
-}
-
-setup_game(10, 100, 0)
+var current_game = new ThaiGame()

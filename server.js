@@ -1,4 +1,5 @@
 const express = require('express');
+const generate = require('./assets/js/generate.js')
 const app = express();
 const port = process.env.port || 5000;
 const router = express.Router();
@@ -16,6 +17,15 @@ app.get('/', (req, res) => {        //get requests to the root ("/") will route 
 
 app.get('/thaigame', (req, res) => {
     res.sendFile('assets/html/thai_game.html', {root: __dirname});
+});
+
+// Generate List of Variables to Use
+app.get('/thaigame/generate', (req, res) => {
+    var num_list = []
+    for (i of Array(parseInt(req.query.games)).keys()) {
+        num_list.push(generate.generate_random_thai_number(req.query.max, req.query.min))
+    }
+    res.send(num_list)
 });
 
 app.use('/', router);
